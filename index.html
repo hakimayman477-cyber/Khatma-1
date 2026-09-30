@@ -44,6 +44,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
         .user-section input {
             flex: 1;
@@ -51,6 +52,21 @@
             border: 1px solid #ced4da;
             border-radius: 6px;
             font-size: 1rem;
+            min-width: 150px;
+        }
+        .btn-confirm-name {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .btn-confirm-name:hover {
+            background-color: #143225;
         }
         .grid {
             display: grid;
@@ -123,6 +139,12 @@
             font-size: 0.75rem;
             line-height: 20px;
         }
+        .status-loading {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -133,26 +155,59 @@
 
     <div class="user-section">
         <label for="userName"><strong>اسمك:</strong></label>
-        <input type="text" id="userName" placeholder="اكتب اسمك هنا أولاً...">
+        <input type="text" id="userName" placeholder="اكتب اسمك هنا...">
+        <button class="btn-confirm-name" onclick="confirmName()">تأكيد</button>
     </div>
 
     <div class="progress-bar-container">
         <div class="progress-bar" id="progressBar">0%</div>
     </div>
 
+    <div id="loadingText" class="status-loading">جاري الاتصال بالسيرفر للمزامنة...</div>
     <div class="grid" id="juzGrid"></div>
 
     <button class="btn btn-reset" onclick="resetKhatma()">🔄 بدء ختمة جديدة (تصفير الكل)</button>
 </div>
 
-<script>
-    const TOTAL_JUZ = 30;
-    let juzData = JSON.parse(localStorage.getItem('khatma_juz_data')) || {};
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    function saveAndRender() {
-        localStorage.setItem('khatma_juz_data', JSON.stringify(juzData));
-        render();
+<script>
+    // تهيئة قاعدة البيانات السحابية (Firebase)
+    const firebaseConfig = {
+        databaseURL: "https://khatma-live-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("khatma_juz");
+
+    const TOTAL_JUZ = 30;
+    let juzData = {};
+
+    // استرجاع الاسم المحفوظ إن وجد
+    window.onload = function() {
+        const savedName = localStorage.getItem('user_khatma_name');
+        if (savedName) {
+            document.getElementById('userName').value = savedName;
+        }
+    };
+
+    function confirmName() {
+        const nameInput = document.getElementById('userName').value.trim();
+        if (!nameInput) {
+            alert('من فضلك اكتب اسمك أولاً!');
+            return;
+        }
+        localStorage.setItem('user_khatma_name', nameInput);
+        alert('تم حفظ الاسم: ' + nameInput + ' ✓');
     }
+
+    // الاستماع للتغييرات في الوقت الفعلي على جميع الأجهزة
+    db.on("value", (snapshot) => {
+        juzData = snapshot.val() || {};
+        document.getElementById('loadingText').style.display = 'none';
+        render();
+    });
 
     function render() {
         const grid = document.getElementById('juzGrid');
@@ -193,37 +248,32 @@
     }
 
     function claimJuz(index) {
-        const nameInput = document.getElementById('userName').value.trim();
+        let nameInput = document.getElementById('userName').value.trim();
         if (!nameInput) {
-            alert('من فضلك اكتب اسمك في الأعلى أولاً!');
+            alert('من فضلك اكتب اسمك واضغط على زر تأكيد في الأعلى أولاً!');
             return;
         }
-        juzData[index] = { status: 'taken', name: nameInput };
-        saveAndRender();
+        localStorage.setItem('user_khatma_name', nameInput);
+        db.child(index).set({ status: 'taken', name: nameInput });
     }
 
     function completeJuz(index) {
         if (juzData[index]) {
-            juzData[index].status = 'completed';
-            saveAndRender();
+            db.child(index).update({ status: 'completed' });
         }
     }
 
     function releaseJuz(index) {
         if (confirm('هل تريد إلغاء حجز هذا الجزء؟')) {
-            delete juzData[index];
-            saveAndRender();
+            db.child(index).remove();
         }
     }
 
     function resetKhatma() {
-        if (confirm('هل أنت تأكد من بدء ختمة جديدة وإعادة تصفير جميع الأجزاء؟')) {
-            juzData = {};
-            saveAndRender();
+        if (confirm('هل أنت تأكد من بدء ختمة جديدة وإعادة تصفير جميع الأجزاء عند الجميع؟')) {
+            db.remove();
         }
     }
-
-    render();
 </script>
 
 </body>
