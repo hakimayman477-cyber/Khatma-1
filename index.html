@@ -13,19 +13,20 @@
         .user-section { background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
         .user-section input { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem; }
         .btn-confirm-name { background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-        .juz-card { border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 90px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+        .juz-card { border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 85px; }
         .juz-card.taken { background: #fff3cd; border-color: #ffe69c; }
         .juz-card.completed { background: #d1e7dd; border-color: #badbcc; }
-        .juz-title { font-weight: bold; font-size: 0.95rem; }
-        .reader-name { font-size: 0.8rem; color: #495057; margin: 4px 0; min-height: 16px; word-break: break-word; }
-        .btn { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%; }
+        .juz-title { font-weight: bold; font-size: 0.9rem; }
+        .reader-name { font-size: 0.78rem; color: #495057; margin: 3px 0; min-height: 15px; word-break: break-word; }
+        .btn { border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; width: 100%; }
         .btn-select { background: var(--accent); color: white; }
         .btn-done { background: #198754; color: white; margin-bottom: 3px; }
         .btn-cancel { background: #dc3545; color: white; }
         .btn-reset { background: #e74c3c; color: white; width: 100%; padding: 10px; border-radius: 6px; margin-top: 15px; font-weight: bold; border: none; cursor: pointer; }
         .progress-bar-container { width: 100%; background: #e9ecef; border-radius: 6px; margin-bottom: 15px; height: 18px; overflow: hidden; }
         .progress-bar { height: 100%; background: #198754; width: 0%; transition: width 0.3s; text-align: center; color: white; font-size: 0.75rem; line-height: 18px; }
+        .sync-status { text-align: center; font-size: 0.75rem; color: #28a745; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -36,79 +37,94 @@
 
     <div class="user-section">
         <input type="text" id="userName" placeholder="اكتب اسمك هنا...">
-        <button class="btn-confirm-name" onclick="confirmName()">حفظ الاسم</button>
+        <button class="btn-confirm-name" onclick="confirmName()">تأكيد الاسم</button>
     </div>
 
     <div class="progress-bar-container">
         <div class="progress-bar" id="progressBar">0%</div>
     </div>
 
+    <div id="syncStatus" class="sync-status">⚡ متصل بالمزامنة الفورية</div>
     <div class="grid" id="juzGrid"></div>
 
     <button class="btn-reset" onclick="resetKhatma()">🔄 بدء ختمة جديدة (تصفير)</button>
 </div>
 
+<!-- تحميل حزمة Firebase المصغرة للاتصال اللحظي السريع -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
-    const DB_URL = "https://khatma-live-default-rtdb.firebaseio.com/khatma_juz";
+    const firebaseConfig = {
+        databaseURL: "https://khatma-live-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("khatma_juz");
+
     const TOTAL_JUZ = 30;
     let juzData = {};
 
-    window.onload = () => {
-        const savedName = localStorage.getItem('user_khatma_name');
-        if (savedName) document.getElementById('userName').value = savedName;
-        fetchData();
-        // تحديث وتفقد التغيرات تلقائياً كل ثانيتين لخفة وسرعة الأداء
-        setInterval(fetchData, 2000);
-    };
-
-    function confirmName() {
-        const name = document.getElementById('userName').value.trim();
-        if (!name) return alert('أدخل اسمك أولاً');
-        localStorage.setItem('user_khatma_name', name);
-        alert('تم حفظ الاسم: ' + name + ' ✓');
-    }
-
-    async function fetchData() {
-        try {
-            const res = await fetch(DB_URL + ".json");
-            const data = await res.json();
-            juzData = data || {};
-            render();
-        } catch(e) {
-            console.error(e);
+    // إنشاء عناصر الواجهة لمرة واحدة فقط لضمان أقصى سرعة
+    function initGrid() {
+        const grid = document.getElementById('juzGrid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= TOTAL_JUZ; i++) {
+            const card = document.createElement('div');
+            card.id = `juz-card-${i}`;
+            card.className = 'juz-card';
+            card.innerHTML = `
+                <div class="juz-title">جزء ${i}</div>
+                <div class="reader-name" id="name-${i}">متاح</div>
+                <div id="btn-box-${i}">
+                    <button class="btn btn-select" onclick="claimJuz(${i})">حجز</button>
+                </div>
+            `;
+            grid.appendChild(card);
         }
     }
 
-    function render() {
-        const grid = document.getElementById('juzGrid');
-        grid.innerHTML = '';
+    initGrid();
+
+    // استرجاع الاسم عند الفتح
+    const savedName = localStorage.getItem('user_khatma_name');
+    if (savedName) document.getElementById('userName').value = savedName;
+
+    function confirmName() {
+        const name = document.getElementById('userName').value.trim();
+        if (!name) return alert('أدخل اسمك أولاً!');
+        localStorage.setItem('user_khatma_name', name);
+        alert('تم تأكيد الاسم: ' + name + ' ✓');
+    }
+
+    // استلام والتحديث اللحظي المباشر بدون إبطاء الصفحة
+    db.on("value", (snapshot) => {
+        juzData = snapshot.val() || {};
+        updateUI();
+    });
+
+    function updateUI() {
         let completed = 0;
 
         for (let i = 1; i <= TOTAL_JUZ; i++) {
             const data = juzData[i] || { status: 'free', name: '' };
-            if (data.status === 'completed') completed++;
+            const card = document.getElementById(`juz-card-${i}`);
+            const nameEl = document.getElementById(`name-${i}`);
+            const btnBox = document.getElementById(`btn-box-${i}`);
 
-            const card = document.createElement('div');
             card.className = `juz-card ${data.status}`;
+            nameEl.innerText = data.name ? 'القارئ: ' + data.name : 'متاح';
 
-            let btns = '';
-            if (data.status === 'free') {
-                btns = `<button class="btn btn-select" onclick="claimJuz(${i})">حجز</button>`;
+            if (data.status === 'completed') {
+                completed++;
+                btnBox.innerHTML = `<b style="color:#198754; font-size:0.8rem;">مكتمل ✓</b>`;
             } else if (data.status === 'taken') {
-                btns = `
+                btnBox.innerHTML = `
                     <button class="btn btn-done" onclick="completeJuz(${i})">تم ✓</button>
                     <button class="btn btn-cancel" onclick="releaseJuz(${i})">إلغاء</button>
                 `;
             } else {
-                btns = `<b style="color:#198754; font-size:0.8rem;">مكتمل ✓</b>`;
+                btnBox.innerHTML = `<button class="btn btn-select" onclick="claimJuz(${i})">حجز</button>`;
             }
-
-            card.innerHTML = `
-                <div class="juz-title">جزء ${i}</div>
-                <div class="reader-name">${data.name ? 'القارئ: ' + data.name : 'متاح'}</div>
-                ${btns}
-            `;
-            grid.appendChild(card);
         }
 
         const pct = Math.round((completed / TOTAL_JUZ) * 100);
@@ -117,42 +133,42 @@
         pb.innerText = pct + '%';
     }
 
-    async function claimJuz(i) {
+    function claimJuz(i) {
         const name = document.getElementById('userName').value.trim();
-        if (!name) return alert('اكتب اسمك واضغط "حفظ الاسم" أولاً!');
+        if (!name) return alert('من فضلك اكتب اسمك واضغط "تأكيد الاسم" أولاً!');
         localStorage.setItem('user_khatma_name', name);
 
-        await fetch(`${DB_URL}/${i}.json`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: 'taken', name: name })
-        });
-        fetchData();
+        // استجابة فورية محلية للشاشة قبل رد السيرفر
+        juzData[i] = { status: 'taken', name: name };
+        updateUI();
+
+        // إرسال السيرفر في الخلفية
+        db.child(i).set({ status: 'taken', name: name });
     }
 
-    async function completeJuz(i) {
-        if (juzData[i]) {
-            await fetch(`${DB_URL}/${i}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: 'completed' })
-            });
-            fetchData();
-        }
+    function completeJuz(i) {
+        juzData[i].status = 'completed';
+        updateUI();
+        db.child(i).update({ status: 'completed' });
     }
 
-    async function releaseJuz(i) {
+    function releaseJuz(i) {
         if (confirm('إلغاء حجز هذا الجزء؟')) {
-            await fetch(`${DB_URL}/${i}.json`, { method: 'DELETE' });
-            fetchData();
+            delete juzData[i];
+            updateUI();
+            db.child(i).remove();
         }
     }
 
-    async function resetKhatma() {
-        if (confirm('تصفير الختمة وبدء ختمة جديدة عند الجميع؟')) {
-            await fetch(`${DB_URL}.json`, { method: 'DELETE' });
-            fetchData();
+    function resetKhatma() {
+        if (confirm('هل أنت متأكد من تصفير الختمة وبدء ختمة جديدة عند الجميع؟')) {
+            juzData = {};
+            updateUI();
+            db.remove();
         }
     }
 </script>
 
 </body>
 </html>
+
