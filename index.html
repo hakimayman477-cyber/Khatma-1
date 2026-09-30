@@ -96,6 +96,15 @@
         .btn-select { background: var(--accent); color: white; }
         .btn-done { background: #198754; color: white; }
         .btn-cancel { background: #dc3545; color: white; margin-top: 4px; }
+        .btn-reset { 
+            background: #e74c3c; 
+            color: white; 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin-top: 25px; 
+            font-weight: bold;
+        }
         .progress-bar-container {
             width: 100%;
             background-color: #e9ecef;
@@ -132,6 +141,8 @@
     </div>
 
     <div class="grid" id="juzGrid"></div>
+
+    <button class="btn btn-reset" onclick="resetKhatma()">🔄 بدء ختمة جديدة (تصفير الكل)</button>
 </div>
 
 <script>
@@ -201,6 +212,13 @@
     function releaseJuz(index) {
         if (confirm('هل تريد إلغاء حجز هذا الجزء؟')) {
             delete juzData[index];
+            saveAndRender();
+        }
+    }
+
+    function resetKhatma() {
+        if (confirm('هل أنت تأكد من بدء ختمة جديدة وإعادة تصفير جميع الأجزاء؟')) {
+            juzData = {};
             saveAndRender();
         }
     }
