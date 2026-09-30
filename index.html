@@ -3,90 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ختمة القرآن الكريم</title>
+    <title>ختمة القرآن الجماعية</title>
     <style>
+        :root {
+            --primary: #1b4332;
+            --accent: #2d6a4f;
+            --bg: #f8f9fa;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--bg);
             color: #333;
-            text-align: center;
-            padding: 20px;
             margin: 0;
+            padding: 15px;
+            direction: rtl;
         }
         .container {
-            max-width: 500px;
-            margin: 40px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
         }
-        p {
-            color: #7f8c8d;
-            font-size: 1.1rem;
+        p.subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 20px;
         }
-        .counter {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #27ae60;
-            margin: 20px 0;
-        }
-        button {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
+        .user-section {
+            background: #e9ecef;
+            padding: 15px;
             border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .user-section input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        .juz-card {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .juz-card.taken {
+            background: #fff3cd;
+            border-color: #ffe69c;
+        }
+        .juz-card.completed {
+            background: #d1e7dd;
+            border-color: #badbcc;
+        }
+        .juz-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .reader-name {
+            font-size: 0.85rem;
+            color: #495057;
+            margin-bottom: 8px;
+            min-height: 18px;
+        }
+        .btn {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background 0.3s;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .btn-select { background: var(--accent); color: white; }
+        .btn-done { background: #198754; color: white; }
+        .btn-cancel { background: #dc3545; color: white; margin-top: 4px; }
+        .progress-bar-container {
             width: 100%;
-            margin-bottom: 10px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            height: 20px;
+            overflow: hidden;
         }
-        button:hover {
-            background-color: #219150;
-        }
-        .reset-btn {
-            background-color: #e74c3c;
-            font-size: 0.9rem;
-            padding: 8px 15px;
-        }
-        .reset-btn:hover {
-            background-color: #c0392b;
+        .progress-bar {
+            height: 100%;
+            background-color: #198754;
+            width: 0%;
+            transition: width 0.3s;
+            text-align: center;
+            color: white;
+            font-size: 0.75rem;
+            line-height: 20px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>متابعة ختمة القرآن الكريم</h1>
-    <p>الأجزاء / الصفحات المكتملة</p>
-    <div class="counter" id="count">0</div>
-    <button onclick="increment()">+ إضافة تقدم</button>
-    <button class="reset-btn" onclick="reset()">إعادة ضبط العداد</button>
+    <h1>ختمة القرآن الجماعية</h1>
+    <p class="subtitle">اختر الجزء الذي ترغب بقراءته وحدث حالته عند الانتهاء</p>
+
+    <div class="user-section">
+        <label for="userName"><strong>اسمك:</strong></label>
+        <input type="text" id="userName" placeholder="اكتب اسمك هنا أولاً...">
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+    </div>
+
+    <div class="grid" id="juzGrid"></div>
 </div>
 
 <script>
-    let count = localStorage.getItem('khatmaCount') ? parseInt(localStorage.getItem('khatmaCount')) : 0;
-    document.getElementById('count').innerText = count;
+    const TOTAL_JUZ = 30;
+    let juzData = JSON.parse(localStorage.getItem('khatma_juz_data')) || {};
 
-    function increment() {
-        count++;
-        document.getElementById('count').innerText = count;
-        localStorage.setItem('khatmaCount', count);
+    function saveAndRender() {
+        localStorage.setItem('khatma_juz_data', JSON.stringify(juzData));
+        render();
     }
 
-    function reset() {
-        if(confirm("هل أنت تأكد من إعادة العداد للصفر؟")) {
-            count = 0;
-            document.getElementById('count').innerText = count;
-            localStorage.setItem('khatmaCount', count);
+    function render() {
+        const grid = document.getElementById('juzGrid');
+        grid.innerHTML = '';
+        let completedCount = 0;
+
+        for (let i = 1; i <= TOTAL_JUZ; i++) {
+            const data = juzData[i] || { status: 'free', name: '' };
+            if (data.status === 'completed') completedCount++;
+
+            const card = document.createElement('div');
+            card.className = `juz-card ${data.status}`;
+
+            let actionButtons = '';
+            if (data.status === 'free') {
+                actionButtons = `<button class="btn btn-select" onclick="claimJuz(${i})">حجز الجزء</button>`;
+            } else if (data.status === 'taken') {
+                actionButtons = `
+                    <button class="btn btn-done" onclick="completeJuz(${i})">تمت القراءة ✓</button>
+                    <button class="btn btn-cancel" onclick="releaseJuz(${i})">إلغاء الحجز</button>
+                `;
+            } else {
+                actionButtons = `<span style="color:#198754; font-weight:bold; font-size:0.85rem;">مكتمل ✓</span>`;
+            }
+
+            card.innerHTML = `
+                <div class="juz-title">الجزء ${i}</div>
+                <div class="reader-name">${data.name ? 'القارئ: ' + data.name : 'متاح'}</div>
+                ${actionButtons}
+            `;
+            grid.appendChild(card);
+        }
+
+        const percentage = Math.round((completedCount / TOTAL_JUZ) * 100);
+        const progressBar = document.getElementById('progressBar');
+        progressBar.style.width = percentage + '%';
+        progressBar.innerText = percentage + '% مكتمل';
+    }
+
+    function claimJuz(index) {
+        const nameInput = document.getElementById('userName').value.trim();
+        if (!nameInput) {
+            alert('من فضلك اكتب اسمك في الأعلى أولاً!');
+            return;
+        }
+        juzData[index] = { status: 'taken', name: nameInput };
+        saveAndRender();
+    }
+
+    function completeJuz(index) {
+        if (juzData[index]) {
+            juzData[index].status = 'completed';
+            saveAndRender();
         }
     }
+
+    function releaseJuz(index) {
+        if (confirm('هل تريد إلغاء حجز هذا الجزء؟')) {
+            delete juzData[index];
+            saveAndRender();
+        }
+    }
+
+    render();
 </script>
 
 </body>
