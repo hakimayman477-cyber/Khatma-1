@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,27 +7,34 @@
     <title>ختمة القرآن الجماعية</title>
     <style>
         :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f8f9fa; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 12px; direction: rtl; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        h1 { color: var(--primary); text-align: center; margin: 5px 0; font-size: 1.5rem; }
-        p.subtitle { text-align: center; color: #6c757d; margin-bottom: 15px; font-size: 0.85rem; }
-        .user-section { background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
-        .user-section input { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem; }
-        .btn-confirm-name { background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-        .juz-card { border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 85px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #333; padding: 12px; direction: rtl; }
+        .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; font-size: 1.4rem; }
+        p.subtitle { text-align: center; color: #6c757d; margin-bottom: 12px; font-size: 0.85rem; }
+        
+        .user-section { background: #e9ecef; padding: 8px; border-radius: 8px; margin-bottom: 12px; display: flex; gap: 8px; }
+        .user-section input { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.9rem; outline: none; }
+        .btn-confirm-name { background: var(--primary); color: #fff; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .btn-refresh { background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        
+        .progress-bar-container { flex: 1; background: #e9ecef; border-radius: 6px; height: 18px; overflow: hidden; margin-left: 10px; }
+        .progress-bar { height: 100%; background: #198754; width: 0%; transition: width 0.3s; text-align: center; color: white; font-size: 0.75rem; line-height: 18px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 8px; }
+        .juz-card { border: 1px solid #dee2e6; padding: 8px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
         .juz-card.taken { background: #fff3cd; border-color: #ffe69c; }
         .juz-card.completed { background: #d1e7dd; border-color: #badbcc; }
-        .juz-title { font-weight: bold; font-size: 0.9rem; }
-        .reader-name { font-size: 0.78rem; color: #495057; margin: 3px 0; min-height: 15px; word-break: break-word; }
-        .btn { border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; width: 100%; }
+        .juz-title { font-weight: bold; font-size: 0.88rem; }
+        .reader-name { font-size: 0.75rem; color: #495057; margin: 3px 0; min-height: 15px; word-break: break-word; }
+        
+        .btn { border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; width: 100%; font-weight: bold; }
         .btn-select { background: var(--accent); color: white; }
         .btn-done { background: #198754; color: white; margin-bottom: 3px; }
         .btn-cancel { background: #dc3545; color: white; }
-        .btn-reset { background: #e74c3c; color: white; width: 100%; padding: 10px; border-radius: 6px; margin-top: 15px; font-weight: bold; border: none; cursor: pointer; }
-        .progress-bar-container { width: 100%; background: #e9ecef; border-radius: 6px; margin-bottom: 15px; height: 18px; overflow: hidden; }
-        .progress-bar { height: 100%; background: #198754; width: 0%; transition: width 0.3s; text-align: center; color: white; font-size: 0.75rem; line-height: 18px; }
-        .sync-status { text-align: center; font-size: 0.75rem; color: #28a745; margin-bottom: 8px; }
+        .btn-reset { background: #e74c3c; color: white; width: 100%; padding: 10px; border-radius: 6px; margin-top: 15px; font-weight: bold; border: none; cursor: pointer; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -37,94 +45,83 @@
 
     <div class="user-section">
         <input type="text" id="userName" placeholder="اكتب اسمك هنا...">
-        <button class="btn-confirm-name" onclick="confirmName()">تأكيد الاسم</button>
+        <button class="btn-confirm-name" onclick="saveName()">حفظ</button>
     </div>
 
-    <div class="progress-bar-container">
-        <div class="progress-bar" id="progressBar">0%</div>
+    <div class="top-bar">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        <button class="btn-refresh" onclick="loadData()">🔄 تحديث</button>
     </div>
 
-    <div id="syncStatus" class="sync-status">⚡ متصل بالمزامنة الفورية</div>
     <div class="grid" id="juzGrid"></div>
 
     <button class="btn-reset" onclick="resetKhatma()">🔄 بدء ختمة جديدة (تصفير)</button>
 </div>
 
-<!-- تحميل حزمة Firebase المصغرة للاتصال اللحظي السريع -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 <script>
-    const firebaseConfig = {
-        databaseURL: "https://khatma-live-default-rtdb.firebaseio.com/"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database().ref("khatma_juz");
-
+    const API_URL = "https://khatma-live-default-rtdb.firebaseio.com/khatma_juz";
     const TOTAL_JUZ = 30;
     let juzData = {};
 
-    // إنشاء عناصر الواجهة لمرة واحدة فقط لضمان أقصى سرعة
-    function initGrid() {
-        const grid = document.getElementById('juzGrid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= TOTAL_JUZ; i++) {
-            const card = document.createElement('div');
-            card.id = `juz-card-${i}`;
-            card.className = 'juz-card';
-            card.innerHTML = `
-                <div class="juz-title">جزء ${i}</div>
-                <div class="reader-name" id="name-${i}">متاح</div>
-                <div id="btn-box-${i}">
-                    <button class="btn btn-select" onclick="claimJuz(${i})">حجز</button>
-                </div>
-            `;
-            grid.appendChild(card);
+    window.onload = () => {
+        const savedName = localStorage.getItem('user_khatma_name');
+        if (savedName) document.getElementById('userName').value = savedName;
+        loadData();
+    };
+
+    function saveName() {
+        const name = document.getElementById('userName').value.trim();
+        if (!name) return alert('أدخل اسمك أولاً');
+        localStorage.setItem('user_khatma_name', name);
+        alert('تم حفظ الاسم ✓');
+    }
+
+    function getName() {
+        return document.getElementById('userName').value.trim() || localStorage.getItem('user_khatma_name') || '';
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch(API_URL + ".json?t=" + Date.now());
+            juzData = (await res.json()) || {};
+            render();
+        } catch (e) {
+            console.error(e);
         }
     }
 
-    initGrid();
-
-    // استرجاع الاسم عند الفتح
-    const savedName = localStorage.getItem('user_khatma_name');
-    if (savedName) document.getElementById('userName').value = savedName;
-
-    function confirmName() {
-        const name = document.getElementById('userName').value.trim();
-        if (!name) return alert('أدخل اسمك أولاً!');
-        localStorage.setItem('user_khatma_name', name);
-        alert('تم تأكيد الاسم: ' + name + ' ✓');
-    }
-
-    // استلام والتحديث اللحظي المباشر بدون إبطاء الصفحة
-    db.on("value", (snapshot) => {
-        juzData = snapshot.val() || {};
-        updateUI();
-    });
-
-    function updateUI() {
+    function render() {
+        const grid = document.getElementById('juzGrid');
+        grid.innerHTML = '';
         let completed = 0;
 
         for (let i = 1; i <= TOTAL_JUZ; i++) {
             const data = juzData[i] || { status: 'free', name: '' };
-            const card = document.getElementById(`juz-card-${i}`);
-            const nameEl = document.getElementById(`name-${i}`);
-            const btnBox = document.getElementById(`btn-box-${i}`);
+            if (data.status === 'completed') completed++;
 
+            const card = document.createElement('div');
             card.className = `juz-card ${data.status}`;
-            nameEl.innerText = data.name ? 'القارئ: ' + data.name : 'متاح';
 
-            if (data.status === 'completed') {
-                completed++;
-                btnBox.innerHTML = `<b style="color:#198754; font-size:0.8rem;">مكتمل ✓</b>`;
+            let actionHtml = '';
+            if (data.status === 'free') {
+                actionHtml = `<button class="btn btn-select" onclick="claim(${i})">حجز</button>`;
             } else if (data.status === 'taken') {
-                btnBox.innerHTML = `
-                    <button class="btn btn-done" onclick="completeJuz(${i})">تم ✓</button>
-                    <button class="btn btn-cancel" onclick="releaseJuz(${i})">إلغاء</button>
+                actionHtml = `
+                    <button class="btn btn-done" onclick="complete(${i})">تم ✓</button>
+                    <button class="btn btn-cancel" onclick="release(${i})">إلغاء</button>
                 `;
             } else {
-                btnBox.innerHTML = `<button class="btn btn-select" onclick="claimJuz(${i})">حجز</button>`;
+                actionHtml = `<b style="color:#198754; font-size:0.75rem;">مكتمل ✓</b>`;
             }
+
+            card.innerHTML = `
+                <div class="juz-title">جزء ${i}</div>
+                <div class="reader-name">${data.name ? data.name : 'متاح'}</div>
+                ${actionHtml}
+            `;
+            grid.appendChild(card);
         }
 
         const pct = Math.round((completed / TOTAL_JUZ) * 100);
@@ -133,39 +130,47 @@
         pb.innerText = pct + '%';
     }
 
-    function claimJuz(i) {
-        const name = document.getElementById('userName').value.trim();
-        if (!name) return alert('من فضلك اكتب اسمك واضغط "تأكيد الاسم" أولاً!');
-        localStorage.setItem('user_khatma_name', name);
-
-        // استجابة فورية محلية للشاشة قبل رد السيرفر
+    async function claim(i) {
+        const name = getName();
+        if (!name) return alert('يرجى كتابة اسمك وحفظه أولاً!');
+        
+        // تحديث شاشة العرض فوراً للسرعة
         juzData[i] = { status: 'taken', name: name };
-        updateUI();
+        render();
 
-        // إرسال السيرفر في الخلفية
-        db.child(i).set({ status: 'taken', name: name });
+        await fetch(`${API_URL}/${i}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'taken', name: name })
+        });
     }
 
-    function completeJuz(i) {
+    async function complete(i) {
+        if (!juzData[i]) return;
         juzData[i].status = 'completed';
-        updateUI();
-        db.child(i).update({ status: 'completed' });
+        render();
+
+        await fetch(`${API_URL}/${i}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed' })
+        });
     }
 
-    function releaseJuz(i) {
-        if (confirm('إلغاء حجز هذا الجزء؟')) {
-            delete juzData[i];
-            updateUI();
-            db.child(i).remove();
-        }
+    async function release(i) {
+        if (!confirm('إلغاء حجز هذا الجزء؟')) return;
+        delete juzData[i];
+        render();
+
+        await fetch(`${API_URL}/${i}.json`, { method: 'DELETE' });
     }
 
-    function resetKhatma() {
-        if (confirm('هل أنت متأكد من تصفير الختمة وبدء ختمة جديدة عند الجميع؟')) {
-            juzData = {};
-            updateUI();
-            db.remove();
-        }
+    async function resetKhatma() {
+        if (!confirm('بدء ختمة جديدة وتصفير الكروت للجميع؟')) return;
+        juzData = {};
+        render();
+
+        await fetch(`${API_URL}.json`, { method: 'DELETE' });
     }
 </script>
 
