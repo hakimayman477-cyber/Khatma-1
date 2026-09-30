@@ -9,7 +9,7 @@
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 12px; direction: rtl; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         h1 { color: var(--primary); text-align: center; margin: 5px 0; font-size: 1.5rem; }
-        p.subtitle { text-align: center; color: #6c757d; margin-bottom: 15px; font-size: 0.9rem; }
+        p.subtitle { text-align: center; color: #6c757d; margin-bottom: 15px; font-size: 0.85rem; }
         .user-section { background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
         .user-section input { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem; }
         .btn-confirm-name { background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
@@ -49,34 +49,34 @@
 </div>
 
 <script>
-    const API_URL = "https://api.jsonbin.io/v3/b/65f123451234567890abcdef"; // سيرفر سريع وخفيف جدًا للمزامنة
+    const DB_URL = "https://khatma-live-default-rtdb.firebaseio.com/khatma_juz";
     const TOTAL_JUZ = 30;
     let juzData = {};
 
     window.onload = () => {
         const savedName = localStorage.getItem('user_khatma_name');
         if (savedName) document.getElementById('userName').value = savedName;
-        loadData();
+        fetchData();
+        // تحديث وتفقد التغيرات تلقائياً كل ثانيتين لخفة وسرعة الأداء
+        setInterval(fetchData, 2000);
     };
 
     function confirmName() {
         const name = document.getElementById('userName').value.trim();
         if (!name) return alert('أدخل اسمك أولاً');
         localStorage.setItem('user_khatma_name', name);
-        alert('تم حفظ الاسم ✓');
+        alert('تم حفظ الاسم: ' + name + ' ✓');
     }
 
-    function loadData() {
+    async function fetchData() {
         try {
-            const raw = localStorage.getItem('khatma_fast_data');
-            if (raw) juzData = JSON.parse(raw);
-        } catch(e) {}
-        render();
-    }
-
-    function saveData() {
-        localStorage.setItem('khatma_fast_data', JSON.stringify(juzData));
-        render();
+            const res = await fetch(DB_URL + ".json");
+            const data = await res.json();
+            juzData = data || {};
+            render();
+        } catch(e) {
+            console.error(e);
+        }
     }
 
     function render() {
@@ -105,7 +105,7 @@
 
             card.innerHTML = `
                 <div class="juz-title">جزء ${i}</div>
-                <div class="reader-name">${data.name || 'متاح'}</div>
+                <div class="reader-name">${data.name ? 'القارئ: ' + data.name : 'متاح'}</div>
                 ${btns}
             `;
             grid.appendChild(card);
@@ -117,32 +117,39 @@
         pb.innerText = pct + '%';
     }
 
-    function claimJuz(i) {
+    async function claimJuz(i) {
         const name = document.getElementById('userName').value.trim();
-        if (!name) return alert('اكتب اسمك واضغط حفظ الاسم أولاً!');
+        if (!name) return alert('اكتب اسمك واضغط "حفظ الاسم" أولاً!');
         localStorage.setItem('user_khatma_name', name);
-        juzData[i] = { status: 'taken', name: name };
-        saveData();
+
+        await fetch(`${DB_URL}/${i}.json`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: 'taken', name: name })
+        });
+        fetchData();
     }
 
-    function completeJuz(i) {
+    async function completeJuz(i) {
         if (juzData[i]) {
-            juzData[i].status = 'completed';
-            saveData();
+            await fetch(`${DB_URL}/${i}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'completed' })
+            });
+            fetchData();
         }
     }
 
-    function releaseJuz(i) {
+    async function releaseJuz(i) {
         if (confirm('إلغاء حجز هذا الجزء؟')) {
-            delete juzData[i];
-            saveData();
+            await fetch(`${DB_URL}/${i}.json`, { method: 'DELETE' });
+            fetchData();
         }
     }
 
-    function resetKhatma() {
-        if (confirm('تصفير الختمة وبدء ختمة جديدة؟')) {
-            juzData = {};
-            saveData();
+    async function resetKhatma() {
+        if (confirm('تصفير الختمة وبدء ختمة جديدة عند الجميع؟')) {
+            await fetch(`${DB_URL}.json`, { method: 'DELETE' });
+            fetchData();
         }
     }
 </script>
