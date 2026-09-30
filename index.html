@@ -1,1 +1,93 @@
- index.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ختمة القرآن الكريم</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .counter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #219150;
+        }
+        .reset-btn {
+            background-color: #e74c3c;
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>متابعة ختمة القرآن الكريم</h1>
+    <p>الأجزاء / الصفحات المكتملة</p>
+    <div class="counter" id="count">0</div>
+    <button onclick="increment()">+ إضافة تقدم</button>
+    <button class="reset-btn" onclick="reset()">إعادة ضبط العداد</button>
+</div>
+
+<script>
+    let count = localStorage.getItem('khatmaCount') ? parseInt(localStorage.getItem('khatmaCount')) : 0;
+    document.getElementById('count').innerText = count;
+
+    function increment() {
+        count++;
+        document.getElementById('count').innerText = count;
+        localStorage.setItem('khatmaCount', count);
+    }
+
+    function reset() {
+        if(confirm("هل أنت تأكد من إعادة العداد للصفر؟")) {
+            count = 0;
+            document.getElementById('count').innerText = count;
+            localStorage.setItem('khatmaCount', count);
+        }
+    }
+</script>
+
+</body>
+</html>
